@@ -501,14 +501,18 @@ SonarQube server is set up and configured in this way to guarantee that only cod
 
  * Accessing SonarQube through the browser by entering the SonarQube server’s IP address followed by port 9000: http://<server's_IP_adress>:9000
 
+   ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/8c05dd5d-239d-486f-a250-48c505e3ecc2)
+
+
 ## Configure Sonarqube And Jenkins For Quality Gate
 
 * Generating authentication token in SonarQube server by navigating from 'My Account' to 'security':
 
-
-
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/aba15de1-c88d-45ee-a89b-5dba9a8b64e0)
 
 * Configuring Quality Gate Jenkins Webhook in SonarQube by navigating from 'Administration' to 'Configuration' to 'webhook' and 'create' and then specifying the URL as this: http://<Jenkins ip address>/sonarqube-webhook/
+
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/fea9de1a-98de-4f8b-b0ce-1db35bbcba3e)
 
 * Installing SonarScanner plugin in jenkins
 
@@ -516,13 +520,76 @@ SonarQube server is set up and configured in this way to guarantee that only cod
   
 * Navigating to 'Configure System' in Jenkins to add SonarQube server details with the generated token
 
+  
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/0dce0266-9c4c-4727-a8d3-79a54966f57d)
+
 * Setting the SonarQube scanner by navigating from 'manage jenkins' to 'Global Tool Configuration'
 
-* Configuring the sonar-scanner.properties file in which SonarQube will require to function during pipeline execution:
+
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/4e283b10-b658-443f-81bd-140025742f2e)
+
+* Updating the Jenkinsfile to include SonarQube Scanning and Quality Gate
+  Below is the snippet for a Quality Gate stage in Jenkinsfile
+
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/4839b451-3f34-415a-96b7-ee6abfa6b22c)
+
+
+  ## NOTE
+  
+   The above step will fail because `sonar-scanner.properties updated
+
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/3dc453f7-90be-47ef-a62e-904c857c5009)
+
+* * Configuring the sonar-scanner.properties file in which SonarQube will require to function during pipeline execution:
 
   `cd /var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarQubeScanner/conf/`
-  
-* Editing and entering the following configuration: $ sudo vi sonar-scanner.properties
+
+ 
+ * Editing and entering the following configuration:  `sudo vi sonar-scanner.properties`
+
+```
+   sonar.host.url=http://<SonarQube-Server-IP-address>:9000
+sonar.projectKey=php-todo
+#----- Default source code encoding
+sonar.sourceEncoding=UTF-8
+sonar.php.exclusions=**/vendor/**
+sonar.php.coverage.reportPaths=build/logs/clover.xml
+sonar.php.tests.reportPath=build/logs/junit.xml
+
+```
+
+* Running the pipeline again
+
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/4f17526a-affa-499d-99d4-2d6f90a78921)
+
+
+* Output from Sonarqube
+
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/d40bb918-efbb-46fb-98e2-40f14bec806c)
+
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/5d7b4446-9f4c-414a-ab2a-4aad98e3916a)
+
+  The outcome reveals that the code has defects, 0.0% code coverage (code coverage is the percentage of unit tests applied by developers to test functions and objects in the code), six hours' worth of technical debt, code smells, and security vulnerabilities. As DevOps Engineers working on the pipeline, it is our responsibility to make sure that the quality gate step causes the pipeline to fail in the event that the quality requirements are not satisfied.
+
+  * The Jenkins file is updated, and a timeout step is added to wait for SonarQube to finish analysis and successfully finish the pipeline only when code quality is acceptable. This ensures that only pipeline jobs that are run on either the "main," "develop," "hotfix," or "release" branch get to make it to the deploy stage.
+
+     ```
+      timeout(time: 1, unit: 'MINUTES') {
+        waitForQualityGate abortPipeline: true
+    }
+    ```
+
+    ##  Running the Pipeline Job with 2 Jenkins agents/slaves(Nodes)
+
+* Introducing Jenkins agents/slaves. Adding 2 more servers to be used as Jenkins slave. Configuring Jenkins to run its pipeline jobs randomly on any available slave nodes.
+
+  ![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/149ca250-a885-42fd-9307-0fbc12791876)
+
+
+* Configuring webhook between Jenkins and GitHub to automatically run the pipeline when there is a code push.
+
+![image](https://github.com/Mubarokahh/Simulating-A-Typical-CI-CD-Pipeline-For-A-PHP-Based-Application/assets/135038657/4319f597-e5fe-4622-87da-4f50de26b5a5)
+
 
 
 
