@@ -635,14 +635,6 @@ sonar.php.tests.reportPath=build/logs/junit.xml
 
 
 
-## Error Encountered during the implementation of this project
-
-
-## Error Code
-
-* Whilst running the pipeline, the 
-
-## Error Execution
 
 
 
